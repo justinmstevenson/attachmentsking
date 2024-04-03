@@ -1,6 +1,5 @@
 import requests
 from bs4 import BeautifulSoup
-
 # from time import sleep
 from pprint import pprint
 import csv
@@ -11,7 +10,9 @@ from urllib.parse import urljoin
 product_links = []
 
 def clean_data(text):
-    return text.replace("\n", " ").replace("\r", "").replace("  ", "").strip()
+    text = text.replace("\n", " ").replace("\r", "")
+    text = re.sub(r'\s+', ' ', text)
+    return text.strip()
 
 # Loop through the pages from 1 to 41
 for page_number in range(1, 42):
@@ -28,10 +29,9 @@ for page_number in range(1, 42):
                 product_links.append(full_link)
 # Count the number of unique product URLs
 number_of_products = len(product_links)
-for link in product_links:
-    print(link)
+#for link in product_links:
+    #print(link)
 print(f"Number of unique product URLs: {number_of_products}")
-
 
 product_details = {}
 counter = 0
@@ -39,6 +39,10 @@ images_directory = "images"
 
 if not os.path.exists(images_directory):
     os.makedirs(images_directory)
+
+headers = ['SKU', 'Images', 'Title', 'Vendor', 'Vendor URL', 'Weight', 'Description', 'Rating', 'Shipping & Returns']
+with open("product_details.csv", "w", newline="", encoding="utf-8") as csvfile:
+    writer = csv.DictWriter(csvfile, fieldnames=headers)
 
 for link in product_links:
     counter += 1
@@ -53,9 +57,9 @@ for link in product_links:
         product_details["SKU"] = ""
 
     sku_directory = os.path.join(images_directory, product_details["SKU"])
-    # Create the sub-directory with the SKU name
     if not os.path.exists(sku_directory):
         os.makedirs(sku_directory)
+
     thumbnails = soup.select("#productThumbnails img")
     product_images = []
     for img in thumbnails:
@@ -68,7 +72,7 @@ for link in product_links:
         # Download and save the image
         with open(image_path, "wb") as f:
             f.write(requests.get(full_url).content)
-        # Add the local path of the image to the list
+        
         product_images.append(src)
     product_details["Images"] = product_images
 
@@ -85,7 +89,7 @@ for link in product_links:
         vendor_tag = soup.find("a", id="productVendor")
         product_details["Vendor"] = clean_data(
             vendor_tag.text.replace("Vendor: ", "")
-            .replace("by:                ").strip()
+            .replace("by: ").strip()
         )
     except:
         product_details["Vendor"] = ""
@@ -97,7 +101,7 @@ for link in product_links:
     try:
         product_details["Weight"] = clean_data(
             soup.find("div", id="productWeight")
-            .text.replace("Weight:                 ", "")
+            .text.replace("Weight:  ", "")
             .strip()
         )
     except:
