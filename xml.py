@@ -30,7 +30,7 @@ def find_product_locs(sitemap_locs):
     return product_locs
 
 # Main process
-sitemap_url = 'https://zumasales.com/sitemap.xml'  # Replace with your sitemap URL
+sitemap_url = 'URLOFSITE.com/sitemap.xml'  # Replace with your sitemap URL
 sitemap_content = get_content(sitemap_url)
 sitemap_locs = find_sitemap_locs(sitemap_content)
 product_locs = find_product_locs(sitemap_locs)
